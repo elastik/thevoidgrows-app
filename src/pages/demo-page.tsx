@@ -22,15 +22,6 @@ function DropletIcon() {
   );
 }
 
-function GaugeIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 17a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z" />
-      <path d="M10 10l3-3" />
-      <circle cx="10" cy="10" r="1" fill="currentColor" />
-    </svg>
-  );
-}
 
 /** Auto-connect using mock adapter on demo page load */
 function DemoAutoConnect() {
@@ -193,17 +184,50 @@ function DemoStatusBar() {
   );
 }
 
-/** Compact sensor pill for use inside the phone frame */
-function SensorPill({ icon, label, value, unit, color }: { icon: React.ReactNode; label: string; value: string; unit: string; color: string }) {
+/** Species profiles with healthy ranges */
+const SPECIES = {
+  blue_oyster: {
+    name: 'Blue Oyster',
+    emoji: '\ud83c\udf44',
+    temp: { min: 18, max: 24, unit: '\u00B0C' },
+    humidity: { min: 85, max: 95, unit: '%' },
+  },
+} as const;
+
+type HealthStatus = 'healthy' | 'warning' | 'danger';
+
+function getHealthStatus(value: number, min: number, max: number): HealthStatus {
+  if (value >= min && value <= max) return 'healthy';
+  const margin = (max - min) * 0.15;
+  if (value >= min - margin && value <= max + margin) return 'warning';
+  return 'danger';
+}
+
+const HEALTH_STYLES: Record<HealthStatus, { dot: string; text: string; label: string }> = {
+  healthy: { dot: 'bg-bio-cyan', text: 'text-bio-cyan', label: 'Healthy' },
+  warning: { dot: 'bg-harvest-gold', text: 'text-harvest-gold', label: 'Warning' },
+  danger: { dot: 'bg-neon-magenta', text: 'text-neon-magenta', label: 'Out of range' },
+};
+
+/** Compact sensor pill with health range indicator */
+function SensorPill({ icon, label, value, unit, health, range }: {
+  icon: React.ReactNode; label: string; value: string; unit: string;
+  health: HealthStatus; range: string;
+}) {
+  const style = HEALTH_STYLES[health];
   return (
     <div className="rounded-lg bg-deep-indigo/40 px-2.5 py-2">
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         <span className="text-muted-foreground [&_svg]:w-[14px] [&_svg]:h-[14px]">{icon}</span>
-        <span className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</span>
+        <span className="text-[9px] uppercase tracking-wider text-muted-foreground truncate">{label}</span>
       </div>
       <div className="mt-1 flex items-baseline gap-0.5">
-        <span className={`font-display text-xl tabular-nums ${color}`}>{value}</span>
+        <span className={`font-display text-xl tabular-nums ${style.text}`}>{value}</span>
         <span className="text-[10px] text-muted-foreground">{unit}</span>
+      </div>
+      <div className="mt-1 flex items-center gap-1">
+        <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+        <span className="text-[8px] text-muted-foreground">{range}</span>
       </div>
     </div>
   );
@@ -215,14 +239,34 @@ function DashboardTab() {
 
   if (!status) return null;
 
-  const temp = status.sensorValid ? status.temperature.toFixed(1) : '--';
-  const humidity = status.sensorValid ? status.humidity.toFixed(1) : '--';
-  const pressure = status.sensorValid ? status.pressure.toFixed(0) : '--';
+  const species = SPECIES.blue_oyster;
+  const temp = status.sensorValid ? status.temperature : 0;
+  const humidity = status.sensorValid ? status.humidity : 0;
+  const tempHealth = status.sensorValid ? getHealthStatus(temp, species.temp.min, species.temp.max) : 'healthy' as HealthStatus;
+  const humidHealth = status.sensorValid ? getHealthStatus(humidity, species.humidity.min, species.humidity.max) : 'healthy' as HealthStatus;
 
   return (
     <div className="animate-fade-in">
+      {/* Species banner */}
+      <div className="mx-3 mt-2 flex items-center gap-2 rounded-lg bg-deep-indigo/30 px-3 py-2">
+        <span className="text-base">{species.emoji}</span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-medium text-mycelium-white">Growing: {species.name}</p>
+          <p className="text-[8px] text-muted-foreground">
+            {species.temp.min}-{species.temp.max}{species.temp.unit} · {species.humidity.min}-{species.humidity.max}{species.humidity.unit}
+          </p>
+        </div>
+        <span className={`text-[9px] font-medium ${
+          tempHealth === 'healthy' && humidHealth === 'healthy' ? 'text-bio-cyan' :
+          tempHealth === 'danger' || humidHealth === 'danger' ? 'text-neon-magenta' : 'text-harvest-gold'
+        }`}>
+          {tempHealth === 'healthy' && humidHealth === 'healthy' ? 'All Good' :
+           tempHealth === 'danger' || humidHealth === 'danger' ? 'Check Now' : 'Attention'}
+        </span>
+      </div>
+
       {/* Dome visual */}
-      <div className="flex justify-center px-3 pt-2">
+      <div className="flex justify-center px-3 pt-1">
         <DomeVisual
           lightMode={status.lightMode}
           uvcActive={status.uvcActive}
@@ -231,11 +275,24 @@ function DashboardTab() {
         />
       </div>
 
-      {/* Compact sensor cards */}
-      <div className="grid grid-cols-3 gap-2 px-3 pt-2">
-        <SensorPill icon={<ThermometerIcon />} label="Temp" value={temp} unit={"\u00B0C"} color="text-bio-cyan" />
-        <SensorPill icon={<DropletIcon />} label="Humid" value={humidity} unit="%" color="text-uv-purple" />
-        <SensorPill icon={<GaugeIcon />} label="Press" value={pressure} unit="hPa" color="text-harvest-gold" />
+      {/* Compact sensor cards — 2 columns (temp + humidity) */}
+      <div className="grid grid-cols-2 gap-2 px-3 pt-2">
+        <SensorPill
+          icon={<ThermometerIcon />}
+          label="Temp"
+          value={status.sensorValid ? temp.toFixed(1) : '--'}
+          unit={"\u00B0C"}
+          health={tempHealth}
+          range={`${species.temp.min}-${species.temp.max}${species.temp.unit}`}
+        />
+        <SensorPill
+          icon={<DropletIcon />}
+          label="Humidity"
+          value={status.sensorValid ? humidity.toFixed(1) : '--'}
+          unit="%"
+          health={humidHealth}
+          range={`${species.humidity.min}-${species.humidity.max}${species.humidity.unit}`}
+        />
       </div>
 
       <p className="mt-3 mb-1 px-3 text-[9px] uppercase tracking-wider text-muted-foreground">Status</p>
