@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useDeviceStatus, useDeviceActions, useConnection } from '@/hooks/index.ts';
+import { useDeviceStatus, useDeviceActions, useConnection, useToast } from '@/hooks/index.ts';
 import { ClimateSlider } from './climate-slider.tsx';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
@@ -8,6 +8,7 @@ export function ClimateSettingsForm() {
   const status = useDeviceStatus();
   const { updateSettings } = useDeviceActions();
   const { connectionStatus } = useConnection();
+  const { addToast } = useToast();
 
   const isDisconnected = connectionStatus !== 'connected';
 
@@ -43,10 +44,12 @@ export function ClimateSettingsForm() {
       updateSettings({ humiditySetpoint, humidityDeadband, fanBaseSpeed })
         .then(() => {
           setSaveState('saved');
+          addToast('success', 'Settings saved');
           savedTimerRef.current = setTimeout(() => setSaveState('idle'), 2000);
         })
         .catch(() => {
           setSaveState('error');
+          addToast('error', 'Failed to save settings');
           savedTimerRef.current = setTimeout(() => setSaveState('idle'), 3000);
         });
     }, 500);

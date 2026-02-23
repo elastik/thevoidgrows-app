@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { StatusBar } from './status-bar.tsx';
 import { BottomNav } from './bottom-nav.tsx';
+import { ToastContainer, ConnectionOverlay } from '@/components/ui/index.ts';
 
 export function AppShell() {
   return (
@@ -10,6 +11,8 @@ export function AppShell() {
         <Outlet />
       </main>
       <BottomNav />
+      <ToastContainer />
+      <ConnectionOverlay />
     </div>
   );
 }

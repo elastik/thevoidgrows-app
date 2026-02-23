@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDeviceStatus, useDeviceActions, useConnection } from '@/hooks/index.ts';
+import { useDeviceStatus, useDeviceActions, useConnection, useToast } from '@/hooks/index.ts';
 import { ConfirmationModal, CountdownTimer } from '@/components/sterilize/index.ts';
 
 /** Loading skeleton shown while connecting to the device */
@@ -90,6 +90,7 @@ export default function SterilizePage() {
   const status = useDeviceStatus();
   const { startSterilization } = useDeviceActions();
   const { connectionStatus, error: connectionError, connect } = useConnection();
+  const { addToast } = useToast();
 
   const [showModal, setShowModal] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
@@ -124,12 +125,15 @@ export default function SterilizePage() {
     try {
       await startSterilization();
       setShowModal(false);
+      addToast('info', 'UV-C sterilization started');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to start sterilization';
       if (message.includes('409') || message.toLowerCase().includes('dome')) {
         setStartError('Dome is not properly seated. Check the reed switch and ensure the dome is locked.');
+        addToast('error', 'Dome not seated — sterilization blocked');
       } else {
         setStartError(message);
+        addToast('error', 'Sterilization failed');
       }
       setShowModal(false);
     } finally {
