@@ -1,65 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useDeviceStatus, useDeviceActions, useConnection, useToast } from '@/hooks/index.ts';
 import { ConfirmationModal, CountdownTimer } from '@/components/sterilize/index.ts';
-
-/** Loading skeleton shown while connecting to the device */
-function ConnectingSkeleton() {
-  return (
-    <div className="p-4 space-y-6">
-      <div className="h-6 w-48 animate-shimmer rounded" />
-      <div className="h-24 animate-shimmer rounded-xl" />
-      <div className="h-40 animate-shimmer rounded-xl" />
-    </div>
-  );
-}
-
-/** Disconnected state with navigation to the connection page */
-function DisconnectedView() {
-  const navigate = useNavigate();
-  return (
-    <div className="flex flex-col items-center justify-center p-8 text-center">
-      <p className="text-lg text-muted-foreground">Not connected</p>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Connect to your device to control UV-C sterilization.
-      </p>
-      <button
-        type="button"
-        onClick={() => navigate('/connect')}
-        className="mt-4 rounded-lg bg-deep-indigo/40 px-4 py-2 text-sm text-bio-cyan hover:bg-deep-indigo/60"
-      >
-        Connect to Dome
-      </button>
-    </div>
-  );
-}
-
-/** Error state with retry + navigation to connection settings */
-function ErrorView({ message, onRetry }: { message: string; onRetry: () => void }) {
-  const navigate = useNavigate();
-  return (
-    <div className="flex flex-col items-center justify-center p-8 text-center">
-      <p className="text-lg text-neon-magenta">Connection Error</p>
-      <p className="mt-1 text-sm text-muted-foreground">{message}</p>
-      <div className="mt-4 flex gap-3">
-        <button
-          type="button"
-          onClick={onRetry}
-          className="rounded-lg bg-deep-indigo/40 px-4 py-2 text-sm text-bio-cyan hover:bg-deep-indigo/60"
-        >
-          Retry
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate('/connect')}
-          className="rounded-lg bg-deep-indigo/40 px-4 py-2 text-sm text-muted-foreground hover:bg-deep-indigo/60"
-        >
-          Connection Settings
-        </button>
-      </div>
-    </div>
-  );
-}
+import { ErrorView, DisconnectedView, ConnectingSkeleton } from '@/components/ui/index.ts';
 
 function UvcIcon() {
   return (
@@ -96,12 +38,10 @@ export default function SterilizePage() {
   const [isStarting, setIsStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
 
-  // Connecting state
   if (connectionStatus === 'connecting') {
-    return <ConnectingSkeleton />;
+    return <ConnectingSkeleton variant="sterilize" />;
   }
 
-  // Error state
   if (connectionStatus === 'error') {
     return (
       <ErrorView
@@ -111,9 +51,8 @@ export default function SterilizePage() {
     );
   }
 
-  // Disconnected state
   if (connectionStatus === 'disconnected' || status === null) {
-    return <DisconnectedView />;
+    return <DisconnectedView message="Connect to your device to control UV-C sterilization." />;
   }
 
   const isUvcActive = status.uvcActive;
