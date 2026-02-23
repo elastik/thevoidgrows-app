@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useDeviceStatus, useConnection } from '@/hooks/index.ts';
-import { SensorCard, StatusRow, LightModeSelector } from '@/components/dashboard/index.ts';
+import { SensorCard, StatusRow, LightModeSelector, SensorChart } from '@/components/dashboard/index.ts';
 
 function ThermometerIcon() {
   return (
@@ -180,6 +180,11 @@ export default function DashboardPage() {
           accentColor="text-harvest-gold"
         />
       </div>
+
+      <p className="mt-6 mb-2 px-4 text-xs uppercase tracking-wider text-muted-foreground">
+        History
+      </p>
+      <SensorChart />
 
       <p className="mt-6 mb-2 px-4 text-xs uppercase tracking-wider text-muted-foreground">
         Status

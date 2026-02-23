@@ -9,6 +9,7 @@ import type {
   UpdateSettingsResponse,
   StartSterilizationResponse,
 } from '@/types/index.ts';
+import { useSensorHistoryStore } from './history-store.ts';
 
 interface DeviceStore {
   // State
@@ -164,6 +165,16 @@ async function poll(expectedAdapter: DeviceAPI): Promise<void> {
       connectionStatus: 'connected',
       error: null,
     });
+
+    // Record sensor snapshot for history chart
+    if (status.sensorValid) {
+      useSensorHistoryStore.getState().addSnapshot({
+        timestamp: Date.now(),
+        temperature: status.temperature,
+        humidity: status.humidity,
+        pressure: status.pressure,
+      });
+    }
   } catch (err: unknown) {
     // Guard after async operation
     if (useDeviceStore.getState().adapter !== expectedAdapter) return;
