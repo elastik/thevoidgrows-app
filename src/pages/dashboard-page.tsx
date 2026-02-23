@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useDeviceStatus } from '@/hooks/index.ts';
-import { useConnection } from '@/hooks/index.ts';
+import { useDeviceStatus, useConnection } from '@/hooks/index.ts';
 import { SensorCard, StatusRow, LightModeSelector } from '@/components/dashboard/index.ts';
 
 function ThermometerIcon() {
@@ -59,27 +58,87 @@ function GaugeIcon() {
   );
 }
 
-export default function DashboardPage() {
-  const status = useDeviceStatus();
-  const { connectionStatus } = useConnection();
+/** Loading skeleton shown while connecting to the device */
+function ConnectingSkeleton() {
+  return (
+    <div className="p-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="h-24 animate-pulse rounded-xl bg-deep-indigo/30" />
+        <div className="h-24 animate-pulse rounded-xl bg-deep-indigo/30" />
+        <div className="h-24 animate-pulse rounded-xl bg-deep-indigo/30" />
+      </div>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        Connecting to dome...
+      </p>
+    </div>
+  );
+}
 
-  const isConnected = connectionStatus === 'connected' && status !== null;
+/** Disconnected state with a link to the connection page */
+function DisconnectedView() {
+  return (
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <p className="text-lg text-muted-foreground">Not connected</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Connect to your device to view sensor data.
+      </p>
+      <Link
+        to="/connect"
+        className="mt-4 rounded-lg bg-deep-indigo/40 px-4 py-2 text-sm text-bio-cyan hover:bg-deep-indigo/60"
+      >
+        Go to Connect
+      </Link>
+    </div>
+  );
+}
 
-  if (!isConnected) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <p className="text-lg text-muted-foreground">Not connected</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Connect to your device to view sensor data.
-        </p>
+/** Error state with retry + link to connection settings */
+function ErrorView({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <p className="text-lg text-neon-magenta">Connection Error</p>
+      <p className="mt-1 text-sm text-muted-foreground">{message}</p>
+      <div className="mt-4 flex gap-3">
+        <button
+          type="button"
+          onClick={onRetry}
+          className="rounded-lg bg-deep-indigo/40 px-4 py-2 text-sm text-bio-cyan hover:bg-deep-indigo/60"
+        >
+          Retry
+        </button>
         <Link
           to="/connect"
-          className="mt-4 rounded-lg bg-deep-indigo/40 px-4 py-2 text-sm text-bio-cyan hover:bg-deep-indigo/60"
+          className="rounded-lg bg-deep-indigo/40 px-4 py-2 text-sm text-muted-foreground hover:bg-deep-indigo/60"
         >
-          Go to Connect
+          Connection Settings
         </Link>
       </div>
+    </div>
+  );
+}
+
+export default function DashboardPage() {
+  const status = useDeviceStatus();
+  const { connectionStatus, error, connect } = useConnection();
+
+  // Connecting state — show skeleton
+  if (connectionStatus === 'connecting') {
+    return <ConnectingSkeleton />;
+  }
+
+  // Error state — show error message + retry
+  if (connectionStatus === 'error') {
+    return (
+      <ErrorView
+        message={error ?? 'Unable to reach the device'}
+        onRetry={() => connect()}
+      />
     );
+  }
+
+  // Disconnected state — prompt to connect
+  if (connectionStatus === 'disconnected' || status === null) {
+    return <DisconnectedView />;
   }
 
   const temp = status.sensorValid
