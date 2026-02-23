@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Full bleed background for maskable safe area -->
+  <rect width="512" height="512" fill="#0A0A0F"/>
+  <!-- Scaled down 20% for maskable safe area (center 80%) -->
+  <g transform="translate(51.2, 51.2) scale(0.8)">
+    <!-- Outer ring -->
+    <circle cx="256" cy="256" r="190" fill="none" stroke="#7B2FBE" stroke-width="10" opacity="0.4"/>
+    <!-- Inner ring -->
+    <circle cx="256" cy="256" r="130" fill="none" stroke="#7B2FBE" stroke-width="6" opacity="0.7"/>
+    <!-- Core glow -->
+    <circle cx="256" cy="256" r="65" fill="#7B2FBE" opacity="0.3"/>
+    <circle cx="256" cy="256" r="32" fill="#7B2FBE" opacity="0.6"/>
+    <!-- Center dot -->
+    <circle cx="256" cy="256" r="10" fill="#E8E0F0"/>
+  </g>
+</svg>

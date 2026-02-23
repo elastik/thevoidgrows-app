@@ -5,7 +5,7 @@ import { ToastContainer, ConnectionOverlay } from '@/components/ui/index.ts';
 
 export function AppShell() {
   return (
-    <div className="flex min-h-screen flex-col bg-void-black">
+    <div className="flex min-h-screen flex-col bg-void-black pt-[env(safe-area-inset-top)]">
       <StatusBar />
       <main className="flex-1 overflow-y-auto pb-16">
         <Outlet />

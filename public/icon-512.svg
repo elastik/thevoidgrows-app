@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0F"/>
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#7B2FBE" stroke-width="10" opacity="0.4"/>
+  <!-- Inner ring -->
+  <circle cx="256" cy="256" r="130" fill="none" stroke="#7B2FBE" stroke-width="6" opacity="0.7"/>
+  <!-- Core glow -->
+  <circle cx="256" cy="256" r="65" fill="#7B2FBE" opacity="0.3"/>
+  <circle cx="256" cy="256" r="32" fill="#7B2FBE" opacity="0.6"/>
+  <!-- Center dot -->
+  <circle cx="256" cy="256" r="10" fill="#E8E0F0"/>
+</svg>
