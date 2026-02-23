@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7B2FBE" stop-opacity="0.15"/>
+      <stop offset="60%" stop-color="#0A0A0F" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Void-black background -->
+  <rect width="2732" height="2732" fill="#0A0A0F"/>
+  <!-- Ambient glow -->
+  <circle cx="1366" cy="1366" r="1000" fill="url(#glow)"/>
+  <!-- Outer ring -->
+  <circle cx="1366" cy="1366" r="320" fill="none" stroke="#7B2FBE" stroke-width="24" opacity="0.4"/>
+  <!-- Inner ring -->
+  <circle cx="1366" cy="1366" r="220" fill="none" stroke="#7B2FBE" stroke-width="16" opacity="0.7"/>
+  <!-- Core glow -->
+  <circle cx="1366" cy="1366" r="110" fill="#7B2FBE" opacity="0.3"/>
+  <circle cx="1366" cy="1366" r="55" fill="#7B2FBE" opacity="0.6"/>
+  <!-- Center dot -->
+  <circle cx="1366" cy="1366" r="18" fill="#E8E0F0"/>
+  <!-- Brand text -->
+  <text x="1366" y="1750" text-anchor="middle" font-family="sans-serif" font-size="72" font-weight="700" letter-spacing="8" fill="#E8E0F0" opacity="0.8">VOID CORE</text>
+</svg>
