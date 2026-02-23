@@ -28,7 +28,7 @@ export function SensorCard({
       </div>
       <div className="mt-2 flex items-baseline gap-1">
         <span
-          className={`font-display text-4xl tabular-nums ${valueColor}`}
+          className={`font-display text-4xl tabular-nums transition-colors duration-300 ${valueColor}`}
         >
           {value}
         </span>

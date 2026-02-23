@@ -53,7 +53,7 @@ export function CountdownTimer({
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
             strokeDashoffset={dashOffset}
-            className="text-neon-magenta transition-[stroke-dashoffset] duration-1000 ease-linear"
+            className="text-neon-magenta transition-[stroke-dashoffset] duration-1000 ease-linear animate-pulse-ring"
           />
         </svg>
 

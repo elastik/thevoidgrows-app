@@ -19,7 +19,7 @@ export default function ConnectionPage() {
   const isError = connectionStatus === 'error';
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="animate-fade-in p-4 space-y-6">
       {/* Section 1: Connection Status Card */}
       <div
         className={`rounded-xl border p-6 bg-deep-indigo/20 ${

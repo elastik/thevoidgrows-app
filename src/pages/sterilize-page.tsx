@@ -7,9 +7,9 @@ import { ConfirmationModal, CountdownTimer } from '@/components/sterilize/index.
 function ConnectingSkeleton() {
   return (
     <div className="p-4 space-y-6">
-      <div className="h-6 w-48 animate-pulse rounded bg-deep-indigo/30" />
-      <div className="h-24 animate-pulse rounded-xl bg-deep-indigo/30" />
-      <div className="h-40 animate-pulse rounded-xl bg-deep-indigo/30" />
+      <div className="h-6 w-48 animate-shimmer rounded" />
+      <div className="h-24 animate-shimmer rounded-xl" />
+      <div className="h-40 animate-shimmer rounded-xl" />
     </div>
   );
 }
@@ -142,7 +142,7 @@ export default function SterilizePage() {
   }
 
   return (
-    <div className="p-4">
+    <div className="animate-fade-in p-4">
       <h2 className="font-display text-2xl uppercase tracking-wider">
         UV-C Sterilization
       </h2>

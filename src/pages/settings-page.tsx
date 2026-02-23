@@ -6,11 +6,11 @@ import { ClimateSettingsForm } from '@/components/settings/index.ts';
 function ConnectingSkeleton() {
   return (
     <div className="p-4 space-y-6">
-      <div className="h-6 w-48 animate-pulse rounded bg-deep-indigo/30" />
+      <div className="h-6 w-48 animate-shimmer rounded" />
       <div className="space-y-4">
-        <div className="h-16 animate-pulse rounded-xl bg-deep-indigo/30" />
-        <div className="h-16 animate-pulse rounded-xl bg-deep-indigo/30" />
-        <div className="h-16 animate-pulse rounded-xl bg-deep-indigo/30" />
+        <div className="h-16 animate-shimmer rounded-xl" />
+        <div className="h-16 animate-shimmer rounded-xl" />
+        <div className="h-16 animate-shimmer rounded-xl" />
       </div>
     </div>
   );
@@ -88,7 +88,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-4">
+    <div className="animate-fade-in p-4">
       <h2 className="font-display text-2xl uppercase tracking-wider">
         Climate Settings
       </h2>

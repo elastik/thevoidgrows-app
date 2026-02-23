@@ -63,9 +63,9 @@ function ConnectingSkeleton() {
   return (
     <div className="p-4">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="h-24 animate-pulse rounded-xl bg-deep-indigo/30" />
-        <div className="h-24 animate-pulse rounded-xl bg-deep-indigo/30" />
-        <div className="h-24 animate-pulse rounded-xl bg-deep-indigo/30" />
+        <div className="h-24 animate-shimmer rounded-xl" />
+        <div className="h-24 animate-shimmer rounded-xl" />
+        <div className="h-24 animate-shimmer rounded-xl" />
       </div>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Connecting to dome...
@@ -156,7 +156,7 @@ export default function DashboardPage() {
     : '--';
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-3">
         <SensorCard
           label="Temperature"
