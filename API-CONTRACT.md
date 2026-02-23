@@ -1,5 +1,8 @@
 # Void Core — Firmware REST API Contract
 
+> **API Version:** 1.0.0
+> **Last Updated:** 2026-02-22
+
 Single source of truth for firmware (C++) and app (TypeScript) communication.
 
 ---
@@ -284,3 +287,16 @@ All adapters implement the same 5 methods:
 | `getConfig()`         | `GET /config`      | `Promise<DeviceConfig>`       |
 
 Consumer code imports `DeviceAPI` and never knows which adapter is active. The adapter is selected at app initialization based on environment (dev vs. production).
+
+## 8. Firmware Cross-Reference
+
+The ESP32 firmware implementing this API lives in the hardware repo:
+
+- **Web server:** `firmware/src/web_server.cpp` — ESPAsyncWebServer route handlers
+- **Wiring:** `firmware/WIRING.md` — GPIO pin assignments and circuit diagram
+
+## 9. Changelog
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0.0 | 2026-02-22 | Initial versioned contract — all 5 endpoints documented |
