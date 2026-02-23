@@ -6,6 +6,7 @@ export interface SensorSnapshot {
   temperature: number;
   humidity: number;
   pressure: number;
+  co2: number;
 }
 
 interface HistoryStore {

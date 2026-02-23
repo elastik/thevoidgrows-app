@@ -24,6 +24,7 @@ const mockStatus: DeviceStatus = {
   temperature: 23.5,
   humidity: 87.2,
   pressure: 1013.2,
+  co2: 800,
   sensorValid: true,
   lightMode: 'void_glow',
   lightCycleOn: true,

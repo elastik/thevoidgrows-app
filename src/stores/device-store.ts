@@ -177,6 +177,7 @@ async function poll(expectedAdapter: DeviceAPI): Promise<void> {
         temperature: status.temperature,
         humidity: status.humidity,
         pressure: status.pressure,
+        co2: status.co2,
       });
     }
   } catch (err: unknown) {

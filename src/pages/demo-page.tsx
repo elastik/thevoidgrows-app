@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useDeviceStatus, useConnection, useDeviceActions } from '@/hooks/index.ts';
-import { StatusRow, LightModeSelector } from '@/components/dashboard/index.ts';
+import { LightModeSelector } from '@/components/dashboard/index.ts';
 import { DomeVisual } from '@/components/demo/index.ts';
+import { ClimateSlider } from '@/components/settings/index.ts';
 
 function ThermometerIcon() {
   return (
@@ -22,6 +23,27 @@ function DropletIcon() {
   );
 }
 
+function Co2Icon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 14a4 4 0 1 1 0-8" />
+      <circle cx="14" cy="10" r="3" />
+      <path d="M16 12.5a1.5 1.5 0 0 1 0 3h-1" />
+    </svg>
+  );
+}
+
+function FanIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="10" r="2" />
+      <path d="M10 8C10 5 12 3 14 3s2 3 0 5" />
+      <path d="M12 10c3 0 5 2 5 4s-3 2-5 0" />
+      <path d="M10 12c0 3-2 5-4 5s-2-3 0-5" />
+      <path d="M8 10c-3 0-5-2-5-4s3-2 5 0" />
+    </svg>
+  );
+}
 
 /** Auto-connect using mock adapter on demo page load */
 function DemoAutoConnect() {
@@ -79,8 +101,8 @@ function FakeIOSStatusBar() {
   );
 }
 
-/** Bottom tab bar matching the real app */
-function FakeBottomNav({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) {
+/** Bottom tab bar */
+function FakeBottomNav({ activeTab, onTabChange, hasAlert }: { activeTab: string; onTabChange: (tab: string) => void; hasAlert?: boolean }) {
   const tabs = [
     {
       id: 'dashboard',
@@ -95,8 +117,8 @@ function FakeBottomNav({ activeTab, onTabChange }: { activeTab: string; onTabCha
       ),
     },
     {
-      id: 'settings',
-      label: 'Settings',
+      id: 'climate',
+      label: 'Climate',
       icon: (
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="5" y1="3" x2="5" y2="17" />
@@ -109,30 +131,14 @@ function FakeBottomNav({ activeTab, onTabChange }: { activeTab: string; onTabCha
       ),
     },
     {
-      id: 'sterilize',
-      label: 'UV-C',
+      id: 'growlog',
+      label: 'Grow Log',
       icon: (
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M10 2L10 4" />
-          <path d="M10 16L10 18" />
-          <path d="M4.22 4.22L5.64 5.64" />
-          <path d="M14.36 14.36L15.78 15.78" />
-          <path d="M2 10L4 10" />
-          <path d="M16 10L18 10" />
-          <path d="M4.22 15.78L5.64 14.36" />
-          <path d="M14.36 5.64L15.78 4.22" />
-          <circle cx="10" cy="10" r="3" />
-        </svg>
-      ),
-    },
-    {
-      id: 'connect',
-      label: 'Connect',
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3.5 13a7 7 0 0 1 13 0" />
-          <path d="M6.5 15a4 4 0 0 1 7 0" />
-          <circle cx="10" cy="17" r="1" fill="currentColor" />
+          <path d="M4 4h12v14H4z" />
+          <path d="M7 8h6" />
+          <path d="M7 11h4" />
+          <path d="M7 14h5" />
         </svg>
       ),
     },
@@ -145,10 +151,13 @@ function FakeBottomNav({ activeTab, onTabChange }: { activeTab: string; onTabCha
           key={tab.id}
           type="button"
           onClick={() => onTabChange(tab.id)}
-          className={`flex flex-col items-center gap-0.5 text-[9px] uppercase tracking-wider ${
+          className={`relative flex flex-col items-center gap-0.5 text-[9px] uppercase tracking-wider ${
             activeTab === tab.id ? 'text-uv-purple' : 'text-muted-foreground'
           }`}
         >
+          {tab.id === 'dashboard' && hasAlert && (
+            <span className="absolute -top-0.5 right-0 h-2 w-2 rounded-full bg-neon-magenta" />
+          )}
           {tab.icon}
           <span>{tab.label}</span>
         </button>
@@ -191,6 +200,7 @@ const SPECIES = {
     emoji: '\ud83c\udf44',
     temp: { min: 18, max: 24, unit: '\u00B0C' },
     humidity: { min: 85, max: 95, unit: '%' },
+    co2: { min: 400, max: 1000, unit: 'ppm' },
   },
 } as const;
 
@@ -242,8 +252,13 @@ function DashboardTab() {
   const species = SPECIES.blue_oyster;
   const temp = status.sensorValid ? status.temperature : 0;
   const humidity = status.sensorValid ? status.humidity : 0;
+  const co2 = status.sensorValid ? status.co2 : 0;
+  const fanPct = Math.round((status.fanSpeed / 255) * 100);
   const tempHealth = status.sensorValid ? getHealthStatus(temp, species.temp.min, species.temp.max) : 'healthy' as HealthStatus;
   const humidHealth = status.sensorValid ? getHealthStatus(humidity, species.humidity.min, species.humidity.max) : 'healthy' as HealthStatus;
+  const co2Health = status.sensorValid ? getHealthStatus(co2, species.co2.min, species.co2.max) : 'healthy' as HealthStatus;
+  const allHealthy = tempHealth === 'healthy' && humidHealth === 'healthy' && co2Health === 'healthy';
+  const anyDanger = tempHealth === 'danger' || humidHealth === 'danger' || co2Health === 'danger';
 
   return (
     <div className="animate-fade-in">
@@ -253,15 +268,11 @@ function DashboardTab() {
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-medium text-mycelium-white">Growing: {species.name}</p>
           <p className="text-[8px] text-muted-foreground">
-            {species.temp.min}-{species.temp.max}{species.temp.unit} · {species.humidity.min}-{species.humidity.max}{species.humidity.unit}
+            {species.temp.min}-{species.temp.max}{species.temp.unit} · {species.humidity.min}-{species.humidity.max}{species.humidity.unit} · &lt;{species.co2.max}ppm
           </p>
         </div>
-        <span className={`text-[9px] font-medium ${
-          tempHealth === 'healthy' && humidHealth === 'healthy' ? 'text-bio-cyan' :
-          tempHealth === 'danger' || humidHealth === 'danger' ? 'text-neon-magenta' : 'text-harvest-gold'
-        }`}>
-          {tempHealth === 'healthy' && humidHealth === 'healthy' ? 'All Good' :
-           tempHealth === 'danger' || humidHealth === 'danger' ? 'Check Now' : 'Attention'}
+        <span className={`text-[9px] font-medium ${allHealthy ? 'text-bio-cyan' : anyDanger ? 'text-neon-magenta' : 'text-harvest-gold'}`}>
+          {allHealthy ? 'All Good' : anyDanger ? 'Check Now' : 'Attention'}
         </span>
       </div>
 
@@ -275,7 +286,7 @@ function DashboardTab() {
         />
       </div>
 
-      {/* Compact sensor cards — 2 columns (temp + humidity) */}
+      {/* Compact sensor cards — 2x2 grid */}
       <div className="grid grid-cols-2 gap-2 px-3 pt-2">
         <SensorPill
           icon={<ThermometerIcon />}
@@ -293,10 +304,23 @@ function DashboardTab() {
           health={humidHealth}
           range={`${species.humidity.min}-${species.humidity.max}${species.humidity.unit}`}
         />
+        <SensorPill
+          icon={<Co2Icon />}
+          label="CO\u2082"
+          value={status.sensorValid ? co2.toString() : '--'}
+          unit="ppm"
+          health={co2Health}
+          range={`<${species.co2.max}ppm`}
+        />
+        <SensorPill
+          icon={<FanIcon />}
+          label="FAE"
+          value={fanPct.toString()}
+          unit="%"
+          health="healthy"
+          range="Fan speed"
+        />
       </div>
-
-      <p className="mt-3 mb-1 px-3 text-[9px] uppercase tracking-wider text-muted-foreground">Status</p>
-      <StatusRow />
 
       <p className="mt-3 mb-1 px-3 text-[9px] uppercase tracking-wider text-muted-foreground">Light Mode</p>
       {/* LightModeSelector has its own px-4; nudge to px-3 to match phone frame */}
@@ -307,110 +331,166 @@ function DashboardTab() {
   );
 }
 
-/** UV-C sterilize tab content */
-function SterilizeTab() {
+/** Climate tab with fan slider and UV-C */
+function ClimateTab() {
   const status = useDeviceStatus();
-  const { startSterilization } = useDeviceActions();
+  const { updateSettings, startSterilization } = useDeviceActions();
+  const [fanSpeed, setFanSpeed] = useState(50);
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (status && !initialized) {
+      setFanSpeed(Math.round((status.fanSpeed / 255) * 100));
+      setInitialized(true);
+    }
+  }, [status, initialized]);
 
   if (!status) return null;
 
+  function handleFanChange(value: number) {
+    setFanSpeed(value);
+    void updateSettings({ humiditySetpoint: 90, humidityDeadband: 3, fanBaseSpeed: value });
+  }
+
   return (
     <div className="animate-fade-in p-3">
-      <p className="font-display text-base uppercase tracking-wider">UV-C Sterilization</p>
-      <p className="mt-1 mb-3 text-[10px] text-muted-foreground">15-minute UV-C cycle to sterilize the grow chamber.</p>
-      <div className="mb-3 rounded-lg border border-neon-magenta/30 bg-neon-magenta/5 p-2.5">
-        <p className="text-[10px] font-medium text-neon-magenta">Safety Warning</p>
-        <p className="mt-0.5 text-[9px] text-muted-foreground leading-relaxed">
-          UV-C light causes severe eye and skin damage. The dome must be fully sealed.
+      <p className="font-display text-base uppercase tracking-wider">Climate Control</p>
+      <p className="mt-1 mb-4 text-[10px] text-muted-foreground">Adjust FAE and airflow for optimal growing.</p>
+
+      {/* Fan / FAE slider */}
+      <div className="mb-4">
+        <ClimateSlider
+          label="Fan Speed (FAE)"
+          value={fanSpeed}
+          onChange={handleFanChange}
+          min={0}
+          max={100}
+          step={5}
+          unit="%"
+        />
+        <p className="mt-1 text-[8px] text-muted-foreground px-1">
+          Higher fan speed = more fresh air exchange = lower CO\u2082
         </p>
       </div>
-      <div className="mb-3 flex items-center gap-2 rounded-lg bg-deep-indigo/20 p-2.5">
-        <span className={`h-2.5 w-2.5 rounded-full ${status.domeSeated ? 'bg-bio-cyan' : 'bg-neon-magenta animate-pulse'}`} />
-        <div>
-          <p className={`text-[11px] font-medium ${status.domeSeated ? 'text-bio-cyan' : 'text-neon-magenta'}`}>
-            Dome {status.domeSeated ? 'Seated' : 'Not Seated'}
-          </p>
+
+      {/* CO2 readout */}
+      <div className="mb-4 flex items-center gap-3 rounded-lg bg-deep-indigo/20 p-3">
+        <span className="text-muted-foreground"><Co2Icon /></span>
+        <div className="flex-1">
+          <p className="text-[9px] uppercase tracking-wider text-muted-foreground">Current CO\u2082</p>
+          <p className="font-display text-lg tabular-nums text-bio-cyan">{status.co2} <span className="text-[10px] text-muted-foreground">ppm</span></p>
         </div>
+        <span className={`text-[9px] font-medium ${status.co2 <= 1000 ? 'text-bio-cyan' : 'text-harvest-gold'}`}>
+          {status.co2 <= 1000 ? 'Healthy' : 'High'}
+        </span>
       </div>
-      <div className="flex justify-center py-2">
+
+      {/* UV-C section */}
+      <div className="rounded-lg border border-neon-magenta/20 bg-neon-magenta/5 p-3">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] font-medium text-neon-magenta">UV-C Sterilization</p>
+          <span className={`flex items-center gap-1 text-[9px] ${status.domeSeated ? 'text-bio-cyan' : 'text-neon-magenta'}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${status.domeSeated ? 'bg-bio-cyan' : 'bg-neon-magenta animate-pulse'}`} />
+            Dome {status.domeSeated ? 'Sealed' : 'Open'}
+          </span>
+        </div>
         <button
           type="button"
           disabled={!status.domeSeated || status.uvcActive}
           onClick={() => { if (!status.uvcActive) void startSterilization(); }}
-          className="flex items-center gap-2 rounded-lg bg-neon-magenta/20 px-5 py-2.5 text-[11px] text-neon-magenta ring-1 ring-neon-magenta/50 transition-all hover:bg-neon-magenta/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:ring-0"
+          className="w-full rounded-lg bg-neon-magenta/20 py-2 text-[11px] text-neon-magenta ring-1 ring-neon-magenta/40 transition-all hover:bg-neon-magenta/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:ring-0"
         >
           {status.uvcActive ? (
-            <>
+            <span className="flex items-center justify-center gap-1.5">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-neon-magenta" />
-              UV-C Active — {Math.ceil(status.uvcRemainingMs / 60000)}m left
-            </>
-          ) : (
-            <span className="font-display uppercase tracking-wider">Start Sterilization</span>
-          )}
+              Active — {Math.ceil(status.uvcRemainingMs / 60000)}m left
+            </span>
+          ) : 'Start 15min Cycle'}
         </button>
       </div>
     </div>
   );
 }
 
-/** Settings tab content */
-function SettingsTab() {
+/** Grow Log tab — simulated grow timeline */
+function GrowLogTab() {
   const status = useDeviceStatus();
   if (!status) return null;
 
+  const growDays = 14;
+  const logEntries = [
+    { day: 1, event: 'Inoculated substrate', icon: '\ud83c\udf31', color: 'text-bio-cyan' },
+    { day: 3, event: 'First signs of mycelium', icon: '\ud83e\udeb6', color: 'text-mycelium-white' },
+    { day: 7, event: 'Full colonization', icon: '\u2728', color: 'text-harvest-gold' },
+    { day: 10, event: 'Pinning started', icon: '\ud83c\udf44', color: 'text-uv-purple' },
+    { day: 14, event: 'Fruiting — Day 14', icon: '\ud83c\udf89', color: 'text-bio-cyan' },
+  ];
+
   return (
     <div className="animate-fade-in p-3">
-      <p className="font-display text-base uppercase tracking-wider">Climate Settings</p>
-      <p className="mt-1 mb-3 text-[10px] text-muted-foreground">Adjust humidity and airflow for optimal growing conditions.</p>
-      <div className="rounded-lg bg-deep-indigo/20 p-3">
-        <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-2">Current Readings</p>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <p className="font-display text-sm tabular-nums text-bio-cyan">
-              {status.sensorValid ? `${status.humidity.toFixed(1)}%` : '--'}
-            </p>
-            <p className="text-[8px] text-muted-foreground">Humidity</p>
-          </div>
-          <div>
-            <p className="font-display text-sm tabular-nums text-bio-cyan">
-              {status.sensorValid ? `${status.temperature.toFixed(1)}\u00B0C` : '--'}
-            </p>
-            <p className="text-[8px] text-muted-foreground">Temp</p>
-          </div>
-          <div>
-            <p className="font-display text-sm tabular-nums text-bio-cyan">
-              {Math.round((status.fanSpeed / 255) * 100)}%
-            </p>
-            <p className="text-[8px] text-muted-foreground">Fan</p>
-          </div>
+      <p className="font-display text-base uppercase tracking-wider">Grow Log</p>
+      <p className="mt-1 mb-4 text-[10px] text-muted-foreground">Track your grow from inoculation to harvest.</p>
+
+      {/* Current grow stats */}
+      <div className="mb-4 grid grid-cols-3 gap-2">
+        <div className="rounded-lg bg-deep-indigo/30 p-2 text-center">
+          <p className="font-display text-lg text-bio-cyan">{growDays}</p>
+          <p className="text-[8px] text-muted-foreground">Days</p>
+        </div>
+        <div className="rounded-lg bg-deep-indigo/30 p-2 text-center">
+          <p className="font-display text-lg text-uv-purple">Fruiting</p>
+          <p className="text-[8px] text-muted-foreground">Stage</p>
+        </div>
+        <div className="rounded-lg bg-deep-indigo/30 p-2 text-center">
+          <p className="font-display text-lg text-harvest-gold">~3d</p>
+          <p className="text-[8px] text-muted-foreground">To Harvest</p>
         </div>
       </div>
-    </div>
-  );
-}
 
-/** Connect tab content */
-function ConnectTab() {
-  const { connectionStatus } = useConnection();
+      {/* Timeline */}
+      <div className="space-y-0">
+        {logEntries.map((entry, i) => (
+          <div key={entry.day} className="flex gap-3">
+            {/* Timeline line */}
+            <div className="flex flex-col items-center">
+              <span className="text-sm">{entry.icon}</span>
+              {i < logEntries.length - 1 && <div className="w-px flex-1 bg-deep-indigo/50 my-1" />}
+            </div>
+            {/* Content */}
+            <div className="pb-3">
+              <p className={`text-[11px] font-medium ${entry.color}`}>{entry.event}</p>
+              <p className="text-[9px] text-muted-foreground">Day {entry.day}</p>
+            </div>
+          </div>
+        ))}
+      </div>
 
-  return (
-    <div className="animate-fade-in p-3">
-      <p className="font-display text-base uppercase tracking-wider">Connection</p>
-      <p className="mt-1 mb-3 text-[10px] text-muted-foreground">Manage your Void Core device connection.</p>
-      <div className="rounded-lg bg-deep-indigo/20 p-4 text-center">
-        <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-bio-cyan/10">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--color-bio-cyan)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3.5 13a7 7 0 0 1 13 0" />
-            <path d="M6.5 15a4 4 0 0 1 7 0" />
-            <circle cx="10" cy="17" r="1" fill="var(--color-bio-cyan)" stroke="none" />
-          </svg>
+      {/* Alerts section */}
+      <div className="mt-3">
+        <p className="text-[9px] uppercase tracking-wider text-muted-foreground mb-2">Recent Alerts</p>
+        <div className="space-y-1.5">
+          <div className="flex items-start gap-2 rounded-lg bg-bio-cyan/5 border border-bio-cyan/20 px-2.5 py-2">
+            <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-bio-cyan" />
+            <div>
+              <p className="text-[10px] text-bio-cyan">Humidity stable at 88%</p>
+              <p className="text-[8px] text-muted-foreground">2 min ago</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2 rounded-lg bg-harvest-gold/5 border border-harvest-gold/20 px-2.5 py-2">
+            <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-harvest-gold" />
+            <div>
+              <p className="text-[10px] text-harvest-gold">CO\u2082 briefly exceeded 1000ppm</p>
+              <p className="text-[8px] text-muted-foreground">18 min ago — auto-resolved</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2 rounded-lg bg-bio-cyan/5 border border-bio-cyan/20 px-2.5 py-2">
+            <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-bio-cyan" />
+            <div>
+              <p className="text-[10px] text-bio-cyan">UV-C sterilization completed</p>
+              <p className="text-[8px] text-muted-foreground">3 hrs ago</p>
+            </div>
+          </div>
         </div>
-        <p className="text-[11px] font-medium text-bio-cyan">
-          {connectionStatus === 'connected' ? 'Connected to VoidCore' : 'Demo Mode'}
-        </p>
-        <p className="mt-1 text-[9px] text-muted-foreground">
-          Simulated device for demonstration
-        </p>
       </div>
     </div>
   );
@@ -485,15 +565,14 @@ export default function DemoPage() {
                   ) : (
                     <>
                       {activeTab === 'dashboard' && <DashboardTab />}
-                      {activeTab === 'sterilize' && <SterilizeTab />}
-                      {activeTab === 'settings' && <SettingsTab />}
-                      {activeTab === 'connect' && <ConnectTab />}
+                      {activeTab === 'climate' && <ClimateTab />}
+                      {activeTab === 'growlog' && <GrowLogTab />}
                     </>
                   )}
                 </main>
 
                 {/* Bottom nav */}
-                <FakeBottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+                <FakeBottomNav activeTab={activeTab} onTabChange={setActiveTab} hasAlert={false} />
 
                 {/* Home indicator */}
                 <div className="flex h-5 items-center justify-center bg-void-black">
@@ -520,7 +599,7 @@ export default function DemoPage() {
                 </span>
                 <div>
                   <p className="text-xs font-medium text-bio-cyan">Dashboard</p>
-                  <p className="text-[11px] text-muted-foreground">Live dome visual with sensor readings</p>
+                  <p className="text-[11px] text-muted-foreground">Live dome, species health ranges, CO\u2082 + FAE</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 rounded-xl bg-deep-indigo/10 p-3">
@@ -528,17 +607,17 @@ export default function DemoPage() {
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="5" y1="3" x2="5" y2="17" /><line x1="10" y1="3" x2="10" y2="17" /><line x1="15" y1="3" x2="15" y2="17" /><circle cx="5" cy="7" r="2" fill="currentColor" /><circle cx="10" cy="13" r="2" fill="currentColor" /><circle cx="15" cy="9" r="2" fill="currentColor" /></svg>
                 </span>
                 <div>
-                  <p className="text-xs font-medium text-uv-purple">Settings</p>
-                  <p className="text-[11px] text-muted-foreground">Climate and airflow controls</p>
+                  <p className="text-xs font-medium text-uv-purple">Climate</p>
+                  <p className="text-[11px] text-muted-foreground">Fan speed slider, CO\u2082 monitor, UV-C sterilization</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 rounded-xl bg-deep-indigo/10 p-3">
-                <span className="mt-0.5 text-neon-magenta">
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="3" /><path d="M10 2L10 4" /><path d="M10 16L10 18" /></svg>
+                <span className="mt-0.5 text-harvest-gold">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h12v14H4z" /><path d="M7 8h6" /><path d="M7 11h4" /></svg>
                 </span>
                 <div>
-                  <p className="text-xs font-medium text-neon-magenta">UV-C Sterilization</p>
-                  <p className="text-[11px] text-muted-foreground">One-tap sterilization with safety interlocks</p>
+                  <p className="text-xs font-medium text-harvest-gold">Grow Log</p>
+                  <p className="text-[11px] text-muted-foreground">Timeline, grow stage, alerts and notifications</p>
                 </div>
               </div>
             </div>

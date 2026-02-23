@@ -29,6 +29,7 @@ export class MockAdapter implements DeviceAPI {
   private uvcStartTime: number = 0;
   private baseTemp: number = 22;
   private baseHumidity: number = 88;
+  private baseCo2: number = 800;
 
   /** Add realistic noise around a base value. */
   private vary(base: number, range: number): number {
@@ -57,6 +58,7 @@ export class MockAdapter implements DeviceAPI {
       temperature: Math.round(this.vary(this.baseTemp, 0.5) * 10) / 10,
       humidity: Math.round(this.vary(this.baseHumidity, 2) * 10) / 10,
       pressure: Math.round(this.vary(1013, 1) * 10) / 10,
+      co2: Math.round(this.vary(this.baseCo2, 30)),
       sensorValid: true,
       lightMode: this.lightMode,
       lightCycleOn: true,
@@ -80,6 +82,8 @@ export class MockAdapter implements DeviceAPI {
   async updateSettings(settings: ClimateSettings): Promise<UpdateSettingsResponse> {
     await this.delay();
     this.climateSettings = { ...settings };
+    // Simulate FAE: higher fan speed pushes CO2 down
+    this.baseCo2 = Math.round(1200 - (settings.fanBaseSpeed / 100) * 600);
     return { success: true, settings: { ...this.climateSettings } };
   }
 

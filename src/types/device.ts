@@ -6,6 +6,7 @@ export interface DeviceStatus {
   temperature: number;       // °C from BME280
   humidity: number;          // %RH from BME280
   pressure: number;          // hPa from BME280
+  co2: number;               // ppm from SCD-40 (0 if no sensor)
   sensorValid: boolean;      // false if sensor read failed
   lightMode: LightMode;
   lightCycleOn: boolean;     // true during "day" phase of 12h cycle
