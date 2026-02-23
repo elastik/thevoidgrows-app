@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDeviceStatus, useConnection, useDeviceActions } from '@/hooks/index.ts';
-import { SensorCard, StatusRow, LightModeSelector, SensorChart } from '@/components/dashboard/index.ts';
+import { StatusRow, LightModeSelector } from '@/components/dashboard/index.ts';
+import { DomeVisual } from '@/components/demo/index.ts';
 
 function ThermometerIcon() {
   return (
@@ -192,6 +193,22 @@ function DemoStatusBar() {
   );
 }
 
+/** Compact sensor pill for use inside the phone frame */
+function SensorPill({ icon, label, value, unit, color }: { icon: React.ReactNode; label: string; value: string; unit: string; color: string }) {
+  return (
+    <div className="rounded-lg bg-deep-indigo/40 px-2.5 py-2">
+      <div className="flex items-center gap-1.5">
+        <span className="text-muted-foreground [&_svg]:w-[14px] [&_svg]:h-[14px]">{icon}</span>
+        <span className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      </div>
+      <div className="mt-1 flex items-baseline gap-0.5">
+        <span className={`font-display text-xl tabular-nums ${color}`}>{value}</span>
+        <span className="text-[10px] text-muted-foreground">{unit}</span>
+      </div>
+    </div>
+  );
+}
+
 /** Dashboard tab content */
 function DashboardTab() {
   const status = useDeviceStatus();
@@ -204,17 +221,31 @@ function DashboardTab() {
 
   return (
     <div className="animate-fade-in">
-      <div className="grid grid-cols-3 gap-2 p-3">
-        <SensorCard label="Temperature" value={temp} unit={"\u00B0C"} icon={<ThermometerIcon />} accentColor="text-bio-cyan" />
-        <SensorCard label="Humidity" value={humidity} unit="%" icon={<DropletIcon />} accentColor="text-uv-purple" />
-        <SensorCard label="Pressure" value={pressure} unit="hPa" icon={<GaugeIcon />} accentColor="text-harvest-gold" />
+      {/* Dome visual */}
+      <div className="flex justify-center px-3 pt-2">
+        <DomeVisual
+          lightMode={status.lightMode}
+          uvcActive={status.uvcActive}
+          temperature={status.temperature}
+          humidity={status.humidity}
+        />
       </div>
-      <p className="mt-4 mb-1 px-3 text-[9px] uppercase tracking-wider text-muted-foreground">History</p>
-      <SensorChart />
-      <p className="mt-4 mb-1 px-3 text-[9px] uppercase tracking-wider text-muted-foreground">Status</p>
+
+      {/* Compact sensor cards */}
+      <div className="grid grid-cols-3 gap-2 px-3 pt-2">
+        <SensorPill icon={<ThermometerIcon />} label="Temp" value={temp} unit={"\u00B0C"} color="text-bio-cyan" />
+        <SensorPill icon={<DropletIcon />} label="Humid" value={humidity} unit="%" color="text-uv-purple" />
+        <SensorPill icon={<GaugeIcon />} label="Press" value={pressure} unit="hPa" color="text-harvest-gold" />
+      </div>
+
+      <p className="mt-3 mb-1 px-3 text-[9px] uppercase tracking-wider text-muted-foreground">Status</p>
       <StatusRow />
-      <p className="mt-4 mb-1 px-3 text-[9px] uppercase tracking-wider text-muted-foreground">Light Mode</p>
-      <LightModeSelector />
+
+      <p className="mt-3 mb-1 px-3 text-[9px] uppercase tracking-wider text-muted-foreground">Light Mode</p>
+      {/* LightModeSelector has its own px-4; nudge to px-3 to match phone frame */}
+      <div className="-mx-1">
+        <LightModeSelector />
+      </div>
     </div>
   );
 }
@@ -422,7 +453,7 @@ export default function DemoPage() {
               Control Your Dome
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              This is a live simulation of the Void Core companion app. Tap through the tabs to explore sensor data, change light modes, and trigger UV-C sterilization — just like the real thing.
+              This is a live simulation of the Void Core companion app. Change light modes and watch the dome respond. Trigger UV-C sterilization. Explore every screen — just like the real thing.
             </p>
 
             <div className="mt-6 space-y-3 text-left">
@@ -432,7 +463,7 @@ export default function DemoPage() {
                 </span>
                 <div>
                   <p className="text-xs font-medium text-bio-cyan">Dashboard</p>
-                  <p className="text-[11px] text-muted-foreground">Live sensor readings and history charts</p>
+                  <p className="text-[11px] text-muted-foreground">Live dome visual with sensor readings</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 rounded-xl bg-deep-indigo/10 p-3">
