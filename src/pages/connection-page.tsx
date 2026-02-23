@@ -104,7 +104,7 @@ export default function ConnectionPage() {
           <button
             type="button"
             onClick={handleConnect}
-            disabled={!ip.trim()}
+            disabled={!ip.trim() || isConnecting}
             className="w-full rounded-lg bg-uv-purple py-3 text-center font-display text-lg uppercase tracking-wider text-mycelium-white transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             Connect
