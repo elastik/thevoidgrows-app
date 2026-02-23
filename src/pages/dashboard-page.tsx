@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useDeviceStatus } from '@/hooks/index.ts';
 import { useConnection } from '@/hooks/index.ts';
-import { SensorCard, StatusRow } from '@/components/dashboard/index.ts';
+import { SensorCard, StatusRow, LightModeSelector } from '@/components/dashboard/index.ts';
 
 function ThermometerIcon() {
   return (
@@ -122,6 +122,11 @@ export default function DashboardPage() {
         Status
       </p>
       <StatusRow />
+
+      <p className="mt-6 mb-2 px-4 text-xs uppercase tracking-wider text-muted-foreground">
+        Light Mode
+      </p>
+      <LightModeSelector />
     </div>
   );
 }
