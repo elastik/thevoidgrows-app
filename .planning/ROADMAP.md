@@ -8,9 +8,9 @@
 
 | # | Phase | Goal | Status |
 |---|-------|------|--------|
-| 1 | Cleanup | Extract shared UI components, delete stale files | pending |
-| 2 | Virtual Dome | Animated SVG dome component that responds to light modes | pending |
-| 3 | Demo Page | /demo route with dome visual + app controls, mobile-responsive, deploy-ready | pending |
+| 1 | Cleanup | Extract shared UI components, delete stale files | done |
+| 2 | Virtual Dome | Animated SVG dome component that responds to light modes | done |
+| 3 | Demo Page | /demo route with dome visual + app controls, mobile-responsive, deploy-ready | done |
 
 ---
 *Created: 2026-02-23*
