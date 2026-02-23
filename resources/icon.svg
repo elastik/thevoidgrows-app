@@ -1,12 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   <rect width="1024" height="1024" fill="#0A0A0F"/>
-  <!-- Outer ring -->
-  <circle cx="512" cy="512" r="380" fill="none" stroke="#7B2FBE" stroke-width="32" opacity="0.4"/>
-  <!-- Inner ring -->
-  <circle cx="512" cy="512" r="260" fill="none" stroke="#7B2FBE" stroke-width="22" opacity="0.7"/>
-  <!-- Core glow -->
-  <circle cx="512" cy="512" r="130" fill="#7B2FBE" opacity="0.3"/>
-  <circle cx="512" cy="512" r="65" fill="#7B2FBE" opacity="0.6"/>
-  <!-- Center dot -->
-  <circle cx="512" cy="512" r="22" fill="#E8E0F0"/>
+  <defs>
+    <radialGradient id="dome-glow" cx="50%" cy="68%" r="45%" fx="50%" fy="68%">
+      <stop offset="0%" stop-color="#7B2FBE" stop-opacity="0.6"/>
+      <stop offset="60%" stop-color="#7B2FBE" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#7B2FBE" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow-blur">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
+  </defs>
+  <!-- Ambient glow beneath dome -->
+  <ellipse cx="512" cy="620" rx="340" ry="220" fill="url(#dome-glow)"/>
+  <!-- Glow line at base -->
+  <line x1="230" y1="610" x2="794" y2="610" stroke="#7B2FBE" stroke-width="12" opacity="0.5" filter="url(#glow-blur)"/>
+  <!-- Dome silhouette — half-circle with UV purple fill -->
+  <path d="M 212 610 A 300 300 0 0 1 812 610 Z" fill="#7B2FBE"/>
 </svg>

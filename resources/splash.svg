@@ -1,23 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
   <defs>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#7B2FBE" stop-opacity="0.15"/>
-      <stop offset="60%" stop-color="#0A0A0F" stop-opacity="0"/>
+    <radialGradient id="glow" cx="50%" cy="45%" r="35%">
+      <stop offset="0%" stop-color="#7B2FBE" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#0A0A0F" stop-opacity="0"/>
     </radialGradient>
+    <radialGradient id="dome-glow" cx="50%" cy="85%" r="55%">
+      <stop offset="0%" stop-color="#7B2FBE" stop-opacity="0.5"/>
+      <stop offset="60%" stop-color="#7B2FBE" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#7B2FBE" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
   </defs>
   <!-- Void-black background -->
   <rect width="2732" height="2732" fill="#0A0A0F"/>
   <!-- Ambient glow -->
-  <circle cx="1366" cy="1366" r="1000" fill="url(#glow)"/>
-  <!-- Outer ring -->
-  <circle cx="1366" cy="1366" r="320" fill="none" stroke="#7B2FBE" stroke-width="24" opacity="0.4"/>
-  <!-- Inner ring -->
-  <circle cx="1366" cy="1366" r="220" fill="none" stroke="#7B2FBE" stroke-width="16" opacity="0.7"/>
-  <!-- Core glow -->
-  <circle cx="1366" cy="1366" r="110" fill="#7B2FBE" opacity="0.3"/>
-  <circle cx="1366" cy="1366" r="55" fill="#7B2FBE" opacity="0.6"/>
-  <!-- Center dot -->
-  <circle cx="1366" cy="1366" r="18" fill="#E8E0F0"/>
-  <!-- Brand text -->
-  <text x="1366" y="1750" text-anchor="middle" font-family="sans-serif" font-size="72" font-weight="700" letter-spacing="8" fill="#E8E0F0" opacity="0.8">VOID CORE</text>
+  <circle cx="1366" cy="1200" r="800" fill="url(#glow)"/>
+  <!-- Dome glow -->
+  <ellipse cx="1366" cy="1340" rx="350" ry="230" fill="url(#dome-glow)"/>
+  <!-- Glow line at base -->
+  <line x1="1066" y1="1330" x2="1666" y2="1330" stroke="#7B2FBE" stroke-width="10" opacity="0.4" filter="url(#blur)"/>
+  <!-- Dome silhouette -->
+  <path d="M 1066 1330 A 300 300 0 0 1 1666 1330 Z" fill="#7B2FBE"/>
+  <!-- App name -->
+  <text x="1366" y="1550" text-anchor="middle" font-family="'Outfit', sans-serif" font-weight="600" font-size="72" letter-spacing="0.15em" fill="#E8E0F0" opacity="0.85">VOID CORE</text>
 </svg>
