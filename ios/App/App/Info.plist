@@ -47,5 +47,17 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!--
+			Allow HTTP connections to local network addresses.
+			Required for ESP32 communication over 192.168.x.x.
+			Does NOT disable ATS for internet connections.
+		-->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Void Core needs local network access to communicate with your mushroom dome's ESP32 controller.</string>
 </dict>
 </plist>
