@@ -29,7 +29,7 @@ function DemoAutoConnect() {
 
   useEffect(() => {
     if (connectionStatus === 'disconnected') {
-      connect();
+      connect({ forceMock: true });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- run once on mount
 

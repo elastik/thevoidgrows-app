@@ -8,8 +8,8 @@ import { MockAdapter } from './mock-adapter.ts';
  * - `VITE_MOCK_API=true` → MockAdapter (no hardware required)
  * - Otherwise → LocalAdapter (connects to ESP32 over WiFi)
  */
-export function createAdapter(): DeviceAPI {
-  if (import.meta.env.VITE_MOCK_API === 'true') {
+export function createAdapter(forceMock?: boolean): DeviceAPI {
+  if (forceMock || import.meta.env.VITE_MOCK_API === 'true') {
     return new MockAdapter();
   }
   return new LocalAdapter();

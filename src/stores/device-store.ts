@@ -19,7 +19,7 @@ interface DeviceStore {
   adapter: DeviceAPI | null;
 
   // Actions
-  connect: (baseUrl?: string) => void;
+  connect: (options?: { baseUrl?: string; forceMock?: boolean }) => void;
   disconnect: () => void;
   setMode: (mode: LightMode) => Promise<SetModeResponse>;
   updateSettings: (settings: ClimateSettings) => Promise<UpdateSettingsResponse>;
@@ -34,6 +34,9 @@ let consecutiveFailures = 0;
 
 /** Module-level reconnect timer for delayed reconnection */
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Remember if mock was forced so reconnects use the same adapter type */
+let useForceMock = false;
 
 const POLL_INTERVAL_MS = 2000;
 const ERROR_THRESHOLD = 3;
@@ -58,7 +61,7 @@ export const useDeviceStore = create<DeviceStore>((set, get) => ({
   error: null,
   adapter: null,
 
-  connect(_baseUrl?: string): void {
+  connect(options?: { baseUrl?: string; forceMock?: boolean }): void {
     // Clear any pending reconnect
     if (reconnectTimer !== null) {
       clearTimeout(reconnectTimer);
@@ -67,7 +70,8 @@ export const useDeviceStore = create<DeviceStore>((set, get) => ({
 
     set({ connectionStatus: 'connecting', error: null });
 
-    const adapter = createAdapter();
+    if (options?.forceMock) useForceMock = true;
+    const adapter = createAdapter(useForceMock);
     set({ adapter });
     consecutiveFailures = 0;
 
