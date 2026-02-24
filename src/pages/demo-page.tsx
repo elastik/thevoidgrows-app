@@ -708,30 +708,24 @@ export default function DemoPage({ embed: embedProp }: { embed?: boolean }) {
               This is a live simulation of the Void Core companion app. Change light modes and watch the dome respond. Trigger UV-C sterilization. Explore every screen — just like the real thing.
             </p>
 
-            <div className="mt-6 space-y-3 text-left">
-              <div className="flex items-start gap-3 rounded-xl bg-deep-indigo/10 p-3">
-                <span className="mt-0.5 text-bio-cyan">
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="2" width="7" height="7" rx="1" /><rect x="11" y="2" width="7" height="7" rx="1" /><rect x="2" y="11" width="7" height="7" rx="1" /><rect x="11" y="11" width="7" height="7" rx="1" /></svg>
-                </span>
-                <div>
+            <div className="mt-6 space-y-4 text-left">
+              <div className="overflow-hidden rounded-xl bg-deep-indigo/10">
+                <img src="/screenshots/demo-dashboard.png" alt="Dashboard tab showing dome visual, species selector, and sensor readings" className="w-full" loading="lazy" />
+                <div className="p-3">
                   <p className="text-xs font-medium text-bio-cyan">Dashboard</p>
                   <p className="text-[11px] text-muted-foreground">Live dome, species health ranges, CO&#x2082; + FAE</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 rounded-xl bg-deep-indigo/10 p-3">
-                <span className="mt-0.5 text-uv-purple">
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="5" y1="3" x2="5" y2="17" /><line x1="10" y1="3" x2="10" y2="17" /><line x1="15" y1="3" x2="15" y2="17" /><circle cx="5" cy="7" r="2" fill="currentColor" /><circle cx="10" cy="13" r="2" fill="currentColor" /><circle cx="15" cy="9" r="2" fill="currentColor" /></svg>
-                </span>
-                <div>
+              <div className="overflow-hidden rounded-xl bg-deep-indigo/10">
+                <img src="/screenshots/demo-climate.png" alt="Climate tab showing fan speed slider, CO2 monitor, and UV-C sterilization" className="w-full" loading="lazy" />
+                <div className="p-3">
                   <p className="text-xs font-medium text-uv-purple">Climate</p>
                   <p className="text-[11px] text-muted-foreground">Fan speed slider, CO&#x2082; monitor, UV-C sterilization</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 rounded-xl bg-deep-indigo/10 p-3">
-                <span className="mt-0.5 text-harvest-gold">
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h12v14H4z" /><path d="M7 8h6" /><path d="M7 11h4" /></svg>
-                </span>
-                <div>
+              <div className="overflow-hidden rounded-xl bg-deep-indigo/10">
+                <img src="/screenshots/demo-growlog.png" alt="Grow Log tab showing timeline, grow stage, and alert notifications" className="w-full" loading="lazy" />
+                <div className="p-3">
                   <p className="text-xs font-medium text-harvest-gold">Grow Log</p>
                   <p className="text-[11px] text-muted-foreground">Timeline, grow stage, alerts and notifications</p>
                 </div>
