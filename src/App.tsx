@@ -23,6 +23,7 @@ export default function App() {
       <AutoConnect />
       <Routes>
         <Route path="/demo" element={<DemoPage />} />
+        <Route path="/demo-embed" element={<DemoPage embed />} />
         <Route element={<AppShell />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/settings" element={<SettingsPage />} />

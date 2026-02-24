@@ -193,7 +193,7 @@ function DemoStatusBar() {
   );
 }
 
-/** Species profiles with healthy ranges */
+/** Species profiles with healthy ranges and grow timelines */
 const SPECIES = {
   blue_oyster: {
     name: 'Blue Oyster',
@@ -201,9 +201,51 @@ const SPECIES = {
     temp: { min: 18, max: 24, unit: '\u00B0C' },
     humidity: { min: 85, max: 95, unit: '%' },
     co2: { min: 400, max: 1000, unit: 'ppm' },
+    totalDays: 17,
+    milestones: [
+      { day: 1, event: 'Inoculated substrate', stage: 'Inoculation', icon: '\ud83c\udf31', color: 'text-bio-cyan' },
+      { day: 3, event: 'First mycelium visible', stage: 'Colonizing', icon: '\ud83e\udeb6', color: 'text-mycelium-white' },
+      { day: 7, event: 'Full colonization', stage: 'Colonized', icon: '\u2728', color: 'text-harvest-gold' },
+      { day: 10, event: 'Pinning started', stage: 'Pinning', icon: '\ud83c\udf44', color: 'text-uv-purple' },
+      { day: 14, event: 'Fruiting bodies', stage: 'Fruiting', icon: '\ud83c\udf89', color: 'text-bio-cyan' },
+      { day: 17, event: 'Harvest ready', stage: 'Harvest', icon: '\ud83e\uddfa', color: 'text-harvest-gold' },
+    ],
   },
-} as const;
+  lions_mane: {
+    name: "Lion's Mane",
+    emoji: '\ud83e\udd81',
+    temp: { min: 18, max: 22, unit: '\u00B0C' },
+    humidity: { min: 90, max: 98, unit: '%' },
+    co2: { min: 400, max: 800, unit: 'ppm' },
+    totalDays: 24,
+    milestones: [
+      { day: 1, event: 'Inoculated substrate', stage: 'Inoculation', icon: '\ud83c\udf31', color: 'text-bio-cyan' },
+      { day: 5, event: 'First mycelium visible', stage: 'Colonizing', icon: '\ud83e\udeb6', color: 'text-mycelium-white' },
+      { day: 12, event: 'Full colonization', stage: 'Colonized', icon: '\u2728', color: 'text-harvest-gold' },
+      { day: 16, event: 'Teeth forming', stage: 'Forming', icon: '\ud83e\udd81', color: 'text-uv-purple' },
+      { day: 20, event: 'Fruiting bodies', stage: 'Fruiting', icon: '\ud83c\udf89', color: 'text-bio-cyan' },
+      { day: 24, event: 'Harvest ready', stage: 'Harvest', icon: '\ud83e\uddfa', color: 'text-harvest-gold' },
+    ],
+  },
+  pink_oyster: {
+    name: 'Pink Oyster',
+    emoji: '\ud83c\udf38',
+    temp: { min: 22, max: 30, unit: '\u00B0C' },
+    humidity: { min: 85, max: 95, unit: '%' },
+    co2: { min: 400, max: 1200, unit: 'ppm' },
+    totalDays: 12,
+    milestones: [
+      { day: 1, event: 'Inoculated substrate', stage: 'Inoculation', icon: '\ud83c\udf31', color: 'text-bio-cyan' },
+      { day: 2, event: 'First mycelium visible', stage: 'Colonizing', icon: '\ud83e\udeb6', color: 'text-mycelium-white' },
+      { day: 5, event: 'Full colonization', stage: 'Colonized', icon: '\u2728', color: 'text-harvest-gold' },
+      { day: 7, event: 'Pinning started', stage: 'Pinning', icon: '\ud83c\udf38', color: 'text-uv-purple' },
+      { day: 10, event: 'Fruiting bodies', stage: 'Fruiting', icon: '\ud83c\udf89', color: 'text-bio-cyan' },
+      { day: 12, event: 'Harvest ready', stage: 'Harvest', icon: '\ud83e\uddfa', color: 'text-harvest-gold' },
+    ],
+  },
+};
 
+type SpeciesId = keyof typeof SPECIES;
 type HealthStatus = 'healthy' | 'warning' | 'danger';
 
 function getHealthStatus(value: number, min: number, max: number): HealthStatus {
@@ -243,13 +285,53 @@ function SensorPill({ icon, label, value, unit, health, range }: {
   );
 }
 
+/** Species selector pill bar */
+function SpeciesSelector({ activeId, onChange }: { activeId: SpeciesId; onChange: (id: SpeciesId) => void }) {
+  return (
+    <div className="flex gap-2 overflow-x-auto px-3 pt-2">
+      {(Object.keys(SPECIES) as SpeciesId[]).map((id) => {
+        const sp = SPECIES[id];
+        const active = id === activeId;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onChange(id)}
+            className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors ${
+              active
+                ? 'bg-uv-purple/30 text-uv-purple ring-1 ring-uv-purple/40'
+                : 'bg-deep-indigo/30 text-muted-foreground hover:bg-deep-indigo/50'
+            }`}
+          >
+            <span>{sp.emoji}</span>
+            <span>{sp.name}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Tracks elapsed ms since a start time, updating every second */
+function useDemoElapsed(startTime: number) {
+  const [elapsed, setElapsed] = useState(() => Date.now() - startTime);
+  useEffect(() => {
+    const id = setInterval(() => setElapsed(Date.now() - startTime), 1000);
+    return () => clearInterval(id);
+  }, [startTime]);
+  return elapsed;
+}
+
 /** Dashboard tab content */
-function DashboardTab() {
+function DashboardTab({ species, speciesId, onSpeciesChange }: {
+  species: (typeof SPECIES)[SpeciesId];
+  speciesId: SpeciesId;
+  onSpeciesChange: (id: SpeciesId) => void;
+}) {
   const status = useDeviceStatus();
 
   if (!status) return null;
 
-  const species = SPECIES.blue_oyster;
   const temp = status.sensorValid ? status.temperature : 0;
   const humidity = status.sensorValid ? status.humidity : 0;
   const co2 = status.sensorValid ? status.co2 : 0;
@@ -262,6 +344,9 @@ function DashboardTab() {
 
   return (
     <div className="animate-fade-in">
+      {/* Species selector */}
+      <SpeciesSelector activeId={speciesId} onChange={onSpeciesChange} />
+
       {/* Species banner */}
       <div className="mx-3 mt-2 flex items-center gap-2 rounded-lg bg-deep-indigo/30 px-3 py-2">
         <span className="text-base">{species.emoji}</span>
@@ -306,7 +391,7 @@ function DashboardTab() {
         />
         <SensorPill
           icon={<Co2Icon />}
-          label="CO\u2082"
+          label="CO&#x2082;"
           value={status.sensorValid ? co2.toString() : '--'}
           unit="ppm"
           health={co2Health}
@@ -332,7 +417,7 @@ function DashboardTab() {
 }
 
 /** Climate tab with fan slider and UV-C */
-function ClimateTab() {
+function ClimateTab({ species }: { species: (typeof SPECIES)[SpeciesId] }) {
   const status = useDeviceStatus();
   const { updateSettings, startSterilization } = useDeviceActions();
   const [fanSpeed, setFanSpeed] = useState(50);
@@ -352,6 +437,9 @@ function ClimateTab() {
     void updateSettings({ humiditySetpoint: 90, humidityDeadband: 3, fanBaseSpeed: value });
   }
 
+  const co2Health = getHealthStatus(status.co2, species.co2.min, species.co2.max);
+  const co2Style = HEALTH_STYLES[co2Health];
+
   return (
     <div className="animate-fade-in p-3">
       <p className="font-display text-base uppercase tracking-wider">Climate Control</p>
@@ -369,7 +457,7 @@ function ClimateTab() {
           unit="%"
         />
         <p className="mt-1 text-[8px] text-muted-foreground px-1">
-          Higher fan speed = more fresh air exchange = lower CO\u2082
+          Higher fan speed = more fresh air exchange = lower CO&#x2082;
         </p>
       </div>
 
@@ -377,11 +465,11 @@ function ClimateTab() {
       <div className="mb-4 flex items-center gap-3 rounded-lg bg-deep-indigo/20 p-3">
         <span className="text-muted-foreground"><Co2Icon /></span>
         <div className="flex-1">
-          <p className="text-[9px] uppercase tracking-wider text-muted-foreground">Current CO\u2082</p>
-          <p className="font-display text-lg tabular-nums text-bio-cyan">{status.co2} <span className="text-[10px] text-muted-foreground">ppm</span></p>
+          <p className="text-[9px] uppercase tracking-wider text-muted-foreground">Current CO&#x2082;</p>
+          <p className={`font-display text-lg tabular-nums ${co2Style.text}`}>{status.co2} <span className="text-[10px] text-muted-foreground">ppm</span></p>
         </div>
-        <span className={`text-[9px] font-medium ${status.co2 <= 1000 ? 'text-bio-cyan' : 'text-harvest-gold'}`}>
-          {status.co2 <= 1000 ? 'Healthy' : 'High'}
+        <span className={`text-[9px] font-medium ${co2Style.text}`}>
+          {co2Style.label}
         </span>
       </div>
 
@@ -412,24 +500,27 @@ function ClimateTab() {
   );
 }
 
-/** Grow Log tab — simulated grow timeline */
-function GrowLogTab() {
+/** Grow Log tab — dynamic grow timeline */
+function GrowLogTab({ species, demoStartTime }: {
+  species: (typeof SPECIES)[SpeciesId];
+  demoStartTime: number;
+}) {
   const status = useDeviceStatus();
+  const elapsedMs = useDemoElapsed(demoStartTime);
+
   if (!status) return null;
 
-  const growDays = 14;
-  const logEntries = [
-    { day: 1, event: 'Inoculated substrate', icon: '\ud83c\udf31', color: 'text-bio-cyan' },
-    { day: 3, event: 'First signs of mycelium', icon: '\ud83e\udeb6', color: 'text-mycelium-white' },
-    { day: 7, event: 'Full colonization', icon: '\u2728', color: 'text-harvest-gold' },
-    { day: 10, event: 'Pinning started', icon: '\ud83c\udf44', color: 'text-uv-purple' },
-    { day: 14, event: 'Fruiting — Day 14', icon: '\ud83c\udf89', color: 'text-bio-cyan' },
-  ];
+  const growDays = Math.floor(elapsedMs / 60000); // 1 real minute = 1 grow day
+  const milestones = species.milestones;
+  const reached = milestones.filter(m => growDays >= m.day);
+  const currentStage = reached.length > 0 ? reached[reached.length - 1] : null;
+  const nextMilestone = milestones.find(m => growDays < m.day);
+  const daysToHarvest = Math.max(0, species.totalDays - growDays);
 
   return (
     <div className="animate-fade-in p-3">
       <p className="font-display text-base uppercase tracking-wider">Grow Log</p>
-      <p className="mt-1 mb-4 text-[10px] text-muted-foreground">Track your grow from inoculation to harvest.</p>
+      <p className="mt-1 mb-4 text-[10px] text-muted-foreground">Track your grow from inoculation to harvest. 1 min = 1 day.</p>
 
       {/* Current grow stats */}
       <div className="mb-4 grid grid-cols-3 gap-2">
@@ -438,31 +529,38 @@ function GrowLogTab() {
           <p className="text-[8px] text-muted-foreground">Days</p>
         </div>
         <div className="rounded-lg bg-deep-indigo/30 p-2 text-center">
-          <p className="font-display text-lg text-uv-purple">Fruiting</p>
+          <p className={`font-display text-lg truncate ${currentStage?.color ?? 'text-muted-foreground'}`}>
+            {currentStage?.stage ?? 'Starting'}
+          </p>
           <p className="text-[8px] text-muted-foreground">Stage</p>
         </div>
         <div className="rounded-lg bg-deep-indigo/30 p-2 text-center">
-          <p className="font-display text-lg text-harvest-gold">~3d</p>
+          <p className="font-display text-lg text-harvest-gold">
+            {daysToHarvest > 0 ? `~${daysToHarvest}d` : 'Ready!'}
+          </p>
           <p className="text-[8px] text-muted-foreground">To Harvest</p>
         </div>
       </div>
 
       {/* Timeline */}
       <div className="space-y-0">
-        {logEntries.map((entry, i) => (
-          <div key={entry.day} className="flex gap-3">
-            {/* Timeline line */}
-            <div className="flex flex-col items-center">
-              <span className="text-sm">{entry.icon}</span>
-              {i < logEntries.length - 1 && <div className="w-px flex-1 bg-deep-indigo/50 my-1" />}
+        {milestones.map((entry, i) => {
+          const isReached = growDays >= entry.day;
+          return (
+            <div key={entry.day} className={`flex gap-3 ${isReached ? '' : 'opacity-40'}`}>
+              {/* Timeline line */}
+              <div className="flex flex-col items-center">
+                <span className="text-sm">{isReached ? '\u2705' : entry.icon}</span>
+                {i < milestones.length - 1 && <div className="w-px flex-1 bg-deep-indigo/50 my-1" />}
+              </div>
+              {/* Content */}
+              <div className="pb-3">
+                <p className={`text-[11px] font-medium ${entry.color}`}>{entry.event}</p>
+                <p className="text-[9px] text-muted-foreground">Day {entry.day}{isReached && nextMilestone ? '' : ''}</p>
+              </div>
             </div>
-            {/* Content */}
-            <div className="pb-3">
-              <p className={`text-[11px] font-medium ${entry.color}`}>{entry.event}</p>
-              <p className="text-[9px] text-muted-foreground">Day {entry.day}</p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Alerts section */}
@@ -479,7 +577,7 @@ function GrowLogTab() {
           <div className="flex items-start gap-2 rounded-lg bg-harvest-gold/5 border border-harvest-gold/20 px-2.5 py-2">
             <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-harvest-gold" />
             <div>
-              <p className="text-[10px] text-harvest-gold">CO\u2082 briefly exceeded 1000ppm</p>
+              <p className="text-[10px] text-harvest-gold">CO&#x2082; briefly exceeded 1000ppm</p>
               <p className="text-[8px] text-muted-foreground">18 min ago — auto-resolved</p>
             </div>
           </div>
@@ -496,12 +594,76 @@ function GrowLogTab() {
   );
 }
 
-export default function DemoPage() {
+/** iPhone frame shell */
+function PhoneFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative shrink-0">
+      <div
+        className="relative overflow-hidden rounded-[3rem] border-[3px] border-[#2a2a35] bg-void-black shadow-[0_0_60px_rgba(123,47,190,0.15),0_0_120px_rgba(123,47,190,0.05)]"
+        style={{ width: 375, height: 812 }}
+      >
+        <div className="absolute left-1/2 top-2 z-20 -translate-x-1/2">
+          <div className="h-[34px] w-[126px] rounded-full bg-black" />
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function isInIframe(): boolean {
+  try { return window.self !== window.top; } catch { return true; }
+}
+
+export default function DemoPage({ embed: embedProp }: { embed?: boolean }) {
   const { connectionStatus } = useConnection();
   const status = useDeviceStatus();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [speciesId, setSpeciesId] = useState<SpeciesId>('blue_oyster');
+  const [demoStartTime, setDemoStartTime] = useState(() => Date.now());
 
+  const isEmbed = embedProp || isInIframe() || new URLSearchParams(window.location.search).get('embed') === '1';
+  const species = SPECIES[speciesId];
   const isLoading = connectionStatus === 'connecting' || status === null;
+
+  function handleSpeciesChange(id: SpeciesId) {
+    setSpeciesId(id);
+    setDemoStartTime(Date.now());
+  }
+
+  const phoneContent = (
+    <div className="flex h-full flex-col">
+      <FakeIOSStatusBar />
+      <DemoStatusBar />
+      <main className="flex-1 overflow-y-auto overscroll-contain pb-2">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-uv-purple border-t-transparent" />
+            <p className="mt-3 text-[10px] text-muted-foreground">Connecting...</p>
+          </div>
+        ) : (
+          <>
+            {activeTab === 'dashboard' && <DashboardTab species={species} speciesId={speciesId} onSpeciesChange={handleSpeciesChange} />}
+            {activeTab === 'climate' && <ClimateTab species={species} />}
+            {activeTab === 'growlog' && <GrowLogTab species={species} demoStartTime={demoStartTime} />}
+          </>
+        )}
+      </main>
+      <FakeBottomNav activeTab={activeTab} onTabChange={setActiveTab} hasAlert={false} />
+      <div className="flex h-5 items-center justify-center bg-void-black">
+        <div className="h-1 w-28 rounded-full bg-mycelium-white/20" />
+      </div>
+    </div>
+  );
+
+  if (isEmbed) {
+    return (
+      <div className="bg-transparent text-mycelium-white">
+        <DemoAutoConnect />
+        <PhoneFrame>{phoneContent}</PhoneFrame>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-mycelium-white">
@@ -534,53 +696,7 @@ export default function DemoPage() {
       {/* Main: iPhone frame */}
       <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-12">
-
-          {/* iPhone Frame */}
-          <div className="relative shrink-0">
-            {/* Phone bezel */}
-            <div
-              className="relative overflow-hidden rounded-[3rem] border-[3px] border-[#2a2a35] bg-void-black shadow-[0_0_60px_rgba(123,47,190,0.15),0_0_120px_rgba(123,47,190,0.05)]"
-              style={{ width: 375, height: 812 }}
-            >
-              {/* Dynamic Island / Notch */}
-              <div className="absolute left-1/2 top-2 z-20 -translate-x-1/2">
-                <div className="h-[34px] w-[126px] rounded-full bg-black" />
-              </div>
-
-              {/* Screen content */}
-              <div className="flex h-full flex-col">
-                {/* iOS status bar */}
-                <FakeIOSStatusBar />
-
-                {/* App status bar */}
-                <DemoStatusBar />
-
-                {/* Main scrollable area */}
-                <main className="flex-1 overflow-y-auto pb-0">
-                  {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-uv-purple border-t-transparent" />
-                      <p className="mt-3 text-[10px] text-muted-foreground">Connecting...</p>
-                    </div>
-                  ) : (
-                    <>
-                      {activeTab === 'dashboard' && <DashboardTab />}
-                      {activeTab === 'climate' && <ClimateTab />}
-                      {activeTab === 'growlog' && <GrowLogTab />}
-                    </>
-                  )}
-                </main>
-
-                {/* Bottom nav */}
-                <FakeBottomNav activeTab={activeTab} onTabChange={setActiveTab} hasAlert={false} />
-
-                {/* Home indicator */}
-                <div className="flex h-5 items-center justify-center bg-void-black">
-                  <div className="h-1 w-28 rounded-full bg-mycelium-white/20" />
-                </div>
-              </div>
-            </div>
-          </div>
+          <PhoneFrame>{phoneContent}</PhoneFrame>
 
           {/* Side content */}
           <div className="max-w-sm text-center lg:pt-16 lg:text-left">
@@ -599,7 +715,7 @@ export default function DemoPage() {
                 </span>
                 <div>
                   <p className="text-xs font-medium text-bio-cyan">Dashboard</p>
-                  <p className="text-[11px] text-muted-foreground">Live dome, species health ranges, CO\u2082 + FAE</p>
+                  <p className="text-[11px] text-muted-foreground">Live dome, species health ranges, CO&#x2082; + FAE</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 rounded-xl bg-deep-indigo/10 p-3">
@@ -608,7 +724,7 @@ export default function DemoPage() {
                 </span>
                 <div>
                   <p className="text-xs font-medium text-uv-purple">Climate</p>
-                  <p className="text-[11px] text-muted-foreground">Fan speed slider, CO\u2082 monitor, UV-C sterilization</p>
+                  <p className="text-[11px] text-muted-foreground">Fan speed slider, CO&#x2082; monitor, UV-C sterilization</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 rounded-xl bg-deep-indigo/10 p-3">
