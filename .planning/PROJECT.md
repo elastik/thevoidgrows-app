@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A companion app for the Void Dome (ESP32-controlled grow chamber) that monitors sensors, controls lighting modes, adjusts climate settings, and manages UV-C sterilization. Built as a PWA + Capacitor app (iOS/Android/Web). The next milestone adds an interactive virtual dome demo to the website at voidgrows.com/app — a conversion tool that lets visitors experience the dome controls with an animated visual simulation.
+A companion app for the Void Dome (ESP32-controlled grow chamber) that monitors sensors, controls lighting modes, adjusts climate settings, and manages UV-C sterilization. Built as a PWA + Capacitor app (iOS/Android/Web). Includes an interactive virtual dome demo at /demo for website embedding — visitors experience the dome controls with an animated visual simulation before buying or building.
 
 ## Core Value
 
@@ -21,34 +21,35 @@ The virtual dome demo on voidgrows.com/app must sell the product — visitors in
 - ✓ PWA with offline caching and installable — existing
 - ✓ Capacitor native builds (iOS/Android) — existing
 - ✓ Test suite (Vitest unit/component + Playwright E2E) — existing
+- ✓ Animated virtual dome component (CSS/SVG) responds to light mode changes — v5.0
+- ✓ Demo page (/demo route) with dome visual + app controls — v5.0
+- ✓ Dome animation synced to mock adapter state — v5.0
+- ✓ Website-embeddable deployment (iframe-ready, /demo-embed, ?embed=1) — v5.0
+- ✓ Multi-species selector with health ranges (Blue Oyster, Lion's Mane, Pink Oyster) — v5.0
+- ✓ Brand-consistent styling matching voidgrows.com (colors, fonts, feel) — v5.0
+- ✓ Clean up tech debt (shared UI components, deleted stale files) — v5.0
 
 ### Active
 
-- [ ] Animated virtual dome component (CSS/SVG) that responds to light mode changes
-- [ ] Demo page (`/demo` route) with dome visual + app controls side-by-side
-- [ ] Dome animation synced to mock adapter state (lights change color, sensors fluctuate)
-- [ ] Website-embeddable deployment (iframe-ready or direct link from voidgrows.com/app)
-- [ ] Mobile-responsive demo layout (most visitors on phones)
-- [ ] Brand-consistent styling matching voidgrows.com (colors, fonts, feel)
-- [ ] Screenshots/assets for the website app page
-- [ ] Clean up tech debt (duplicate ErrorView, duplicate skeletons, stale _write.js)
+- [ ] Screenshots/assets for the website app page (referenced in side panel but not yet captured)
 
 ### Out of Scope
 
 - 3D rendering (Three.js/WebGL) — CSS/SVG animations sufficient for v1, revisit if conversion data demands it
 - User accounts or login — public demo, no auth needed
 - Real device connection from website — demo is mock-only, actual device control stays in installed app
-- Supabase backend integration — no cloud features this milestone
+- Supabase backend integration — no cloud features needed yet
 - Multi-device support — single virtual dome for demo
-- Grow logging or historical persistence — demo is ephemeral
+- Grow logging or historical persistence — demo is ephemeral (timeline resets on reload)
 
 ## Context
 
 - **Repo structure:** This app repo (`elastik/thevoidgrows-app`) is public. Website is in `elastik/thevoidgrows-web` (Next.js, private).
-- **Architecture decision:** Build the virtual dome demo in this repo, deploy standalone. Website links to or iframes the deployed demo. Avoids code duplication.
-- **Mock adapter:** Already simulates realistic sensor data with noise, light mode persistence, climate echo, UV-C timer. Foundation for the virtual dome experience.
-- **Brand:** The app already uses custom Tailwind tokens (`text-bio-cyan`, `bg-deep-indigo`, `border-neon-magenta`). Need to ensure demo page matches voidgrows.com brand identity.
-- **Previous attempt:** An embedded app approach was tried before — this time we're building a purpose-built demo experience, not just dropping the raw app into the site.
+- **Architecture:** Virtual dome demo built in app repo, deployed standalone. Website iframes or links to /demo-embed.
+- **Mock adapter:** Simulates realistic sensor data with noise, light mode persistence, climate echo, UV-C timer.
+- **Brand:** Custom Tailwind tokens (`text-bio-cyan`, `bg-deep-indigo`, `border-neon-magenta`), Outfit font.
+- **Current state:** 4,216 LOC TypeScript. 53 unit tests + 30 E2E Playwright tests passing.
+- **Demo features:** iPhone frame mockup, 3 tabs (Dashboard, Climate, Grow Log), 3 species with health ranges, dynamic grow timeline (1 min = 1 day).
 
 ## Constraints
 
@@ -62,9 +63,11 @@ The virtual dome demo on voidgrows.com/app must sell the product — visitors in
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Build demo in app repo, not website repo | Mock adapter and device logic already here; avoids duplication | — Pending |
-| CSS/SVG animations over 3D | Fast load, mobile-friendly, sufficient for v1 conversion tool | — Pending |
-| Standalone deploy + iframe/link | Website can embed without coupling codebases | — Pending |
+| Build demo in app repo, not website repo | Mock adapter and device logic already here; avoids duplication | ✓ Good |
+| CSS/SVG animations over 3D | Fast load, mobile-friendly, sufficient for v1 conversion tool | ✓ Good |
+| Standalone deploy + iframe/link | Website can embed without coupling codebases | ✓ Good |
+| iPhone frame mockup for demo | Gives visitors the feel of using a real app | ✓ Good |
+| Multi-species with health ranges | Shows dome versatility, makes demo more engaging | ✓ Good |
 
 ---
-*Last updated: 2026-02-23 after initialization*
+*Last updated: 2026-02-24 after v5.0 milestone*

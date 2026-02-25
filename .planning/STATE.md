@@ -2,44 +2,39 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-23)
+See: .planning/PROJECT.md (updated 2026-02-24)
 
 **Core value:** Virtual dome demo must sell the product — visitors interact with controls and see the dome respond
-**Current focus:** All phases complete
+**Current focus:** Planning next milestone
 
 ## Position
 
-- **Milestone:** v5.0.0 — Virtual Dome Demo
-- **Phase:** 3 of 3 (all complete)
-- **Status:** Done
+- **Last milestone:** v5.0 — Virtual Dome Demo (shipped 2026-02-24)
+- **Next milestone:** TBD
+- **Status:** Ready to plan next milestone
 
 ## Key Decisions
 
 - Build demo in app repo (thevoidgrows-app), website iframes or links
 - CSS/SVG animations, no 3D/WebGL
-- Mock adapter powers the virtual dome (already exists)
+- Mock adapter powers the virtual dome
+- iPhone frame mockup for demo presentation
+- Multi-species with health ranges for engagement
 
-## Completed Work
+## Completed Milestones
 
-### Phase 1: Cleanup
-- Extracted shared ErrorView, DisconnectedView, ConnectingSkeleton to `src/components/ui/`
-- Refactored dashboard, settings, sterilize pages to use shared components
-- Deleted stale `_write.js`
-
-### Phase 2: Virtual Dome
-- Created `src/components/demo/dome-visual.tsx` — animated SVG dome with light mode colors, plant silhouettes, glow effects, UVC pulsing ring
-
-### Phase 3: Demo Page
-- Created `src/pages/demo-page.tsx` — standalone /demo route with dome visual, sensor cards, light controls, UV-C button, system status
-- Added /demo route outside AppShell (no nav chrome)
-- Auto-connects mock adapter on load
+### v5.0 Virtual Dome Demo (2026-02-24)
+- Phase 1: Cleanup — shared UI components, deleted stale files
+- Phase 2: Virtual Dome — animated SVG dome with light modes
+- Phase 3: Demo Page — /demo route, 3 tabs, species selector, embed mode
+- Full details: .planning/milestones/v5.0-ROADMAP.md
 
 ## Session Context
 
 - Codebase mapped: .planning/codebase/ (7 documents)
-- Project initialized: .planning/PROJECT.md
 - Mode: YOLO / Quick depth
-- All 3 phases executed, type-checked, tested (53/53), and built successfully
+- All phases executed, type-checked, tested (53 unit + 30 E2E), and built successfully
+- UAT: 30/30 Playwright tests passed (verify-v5-demo.spec.ts)
 
 ---
-*Updated: 2026-02-23*
+*Updated: 2026-02-24*
